@@ -9,7 +9,7 @@ function calculateSimpleRevenue(purchase, _product) {
   const { discount, sale_price, quantity } = purchase;
   const adjustedDiscount = 1 - purchase.discount / 100;
   const revenue = sale_price * quantity * adjustedDiscount;
-  return revenue;
+  return +revenue.toFixed(2);
 }
 
 /**
