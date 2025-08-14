@@ -7,9 +7,8 @@
 function calculateSimpleRevenue(purchase, _product) {
   // @TODO: Расчет выручки от операции
   const { discount, sale_price, quantity } = purchase;
-  const adjustedDiscount = 1 - purchase.discount / 100;
-  const revenue = sale_price * quantity * adjustedDiscount;
-  return +revenue.toFixed(2);
+  const revenue = sale_price * quantity * (1 - discount / 100);
+  return revenue;
 }
 
 /**
@@ -21,6 +20,7 @@ function calculateSimpleRevenue(purchase, _product) {
  */
 function calculateBonusByProfit(index, total, seller) {
   // @TODO: Расчет бонуса от позиции в рейтинге
+  const { profit } = seller;
   if (index === 0) {
     return seller.profit * 0.15;
   } else if (index === 1 || index === 2) {
@@ -95,8 +95,7 @@ function analyzeSalesData(data, options) {
     }
     // Увеличить количество продаж
     seller.salesCount++;
-    // Увеличить общую сумму всех продаж
-    let totalAmount = 0;
+
     // Расчёт прибыли для каждого товара
     record.items.forEach((item) => {
       const product = productIndex[item.sku]; // Товар
@@ -104,11 +103,11 @@ function analyzeSalesData(data, options) {
       const cost = product.purchase_price * item.quantity;
       // Посчитать выручку (revenue) с учётом скидки через функцию calculateRevenue
       const revenue = calculateRevenue(item, product);
-      totalAmount += revenue.toFixed(2);
+      seller.revenue = +(seller.revenue + revenue).toFixed(2);
       // Посчитать прибыль: выручка минус себестоимость
-      const profit = revenue - cost.toFixed(2);
+      const profit = revenue - cost;
       // Увеличить общую накопленную прибыль (profit) у продавца
-      seller.profit += profit.toFixed(2);
+      seller.profit += profit;
       // Учёт количества проданных товаров
       if (!seller.products_sold[item.sku]) {
         seller.products_sold[item.sku] = 0;
@@ -116,7 +115,6 @@ function analyzeSalesData(data, options) {
       // По артикулу товара увеличить его проданное количество у продавца
       seller.products_sold[item.sku] += item.quantity;
     });
-    seller.revenue += totalAmount.toFixed(2);
   });
   // @TODO: Сортировка продавцов по прибыли
   sellerStats.sort((a, b) => b.profit - a.profit);
